@@ -28,6 +28,8 @@ The toolkit consists of two main components:
 1. **Guardrail Creation Module (guardrails.py)**: Creates guardrails for user roles based on configuration files.
 2. **Guardrail Validation Module (guardrail_validator.py)**: Tests whether the created guardrails work as expected.
 
+![Amazon Bedrock Guardrails Toolkit Architecture](https://github.com/hyeonsangjeon/Amazon-Bedrock-Guardrails-Toolkit/blob/main/docs/diagram.png?raw=true)
+
 ## Features
 
 ### Guardrail Creation Features

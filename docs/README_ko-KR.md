@@ -27,6 +27,9 @@ Amazon Bedrock Guardrails를 활용하여 AI 응답을 제어하고 안전하게
 1. **가드레일 생성 모듈(guardrails.py)**: 구성 파일 기반으로 사용자 역할에 맞는 가드레일을 생성합니다.
 2. **가드레일 검증 모듈(guardrail_validator.py)**: 생성된 가드레일이 예상대로 작동하는지 테스트합니다.
 
+
+![Amazon Bedrock Guardrails Toolkit Architecture](https://github.com/hyeonsangjeon/Amazon-Bedrock-Guardrails-Toolkit/blob/main/docs/diagram.png?raw=true)
+
 ## 기능
 
 ### 가드레일 생성 기능
