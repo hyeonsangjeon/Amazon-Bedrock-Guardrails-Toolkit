@@ -1,0 +1,80 @@
+{
+    "admin": {
+      "content_filter_level": "LOW",
+      "blocked_topics": [],
+      "block_message": "관리자에게는 제한된 내용이지만, 참고하시기 바랍니다.",
+      "blocked_input_message": "관리자 권한으로는 이러한 입력이 허용되지 않습니다. 다른 방식으로 질문해주세요.",
+      "enable_profanity_filter": false,
+      "denied_words": [
+        "supersecret",
+        "password123",
+        "패스워드",
+        "admin credentials"
+      ]
+    },
+    "developer": {
+      "content_filter_level": "MEDIUM",
+      "blocked_topics": [
+        {
+          "name": "Politics",
+          "definition": "Topics related to Politics"
+        },
+        {
+          "name": "Investment Advice",
+          "definition": "주식, 채권, 부동산 등에 관한 투자 조언이나 추천을 제공하는 내용"
+        },
+        {
+          "name": "Cryptocurrency",
+          "definition": "비트코인, 이더리움 등 암호화폐 투자 및 거래 관련 조언"
+        }
+      ],
+      "block_message": "개발자 권한으로는 해당 주제에 대한 답변이 제한됩니다. 관리자에게 문의하세요.",
+      "blocked_input_message": "개발자 권한으로는 이러한 입력이 허용되지 않습니다. 다른 방식으로 질문해주세요.",
+      "enable_profanity_filter": true,
+      "denied_words": [
+        "proprietary code",
+        "access token",
+        "API key",
+        "database password",
+        "패스워드"
+      ]
+    },
+    "user": {
+      "content_filter_level": "HIGH",
+      "blocked_topics": [
+        {
+          "name": "Politics",
+          "definition": "Topics related to Politics"
+        },
+        {
+          "name": "Violence",
+          "definition": "Topics related to Violence"
+        },
+        {
+          "name": "Financial advice",
+          "definition": "Topics related to Financial advice"
+        },
+        {
+          "name": "Investment Advice",
+          "definition": "주식, 채권, 부동산 등에 관한 투자 조언이나 추천을 제공하는 내용"
+        },
+        {
+          "name": "Cryptocurrency",
+          "definition": "비트코인, 이더리움 등 암호화폐 투자 및 거래 관련 조언"
+        },
+        {
+          "name": "Medical Advice",
+          "definition": "질병 진단, 치료법 추천, 약물 복용 조언 등 의료 행위에 해당하는 내용"
+        }
+      ],
+      "block_message": "일반 사용자 권한으로는 이 주제에 대한 답변이 금지되어 있습니다.",
+      "blocked_input_message": "일반 사용자 권한으로는 이러한 입력이 허용되지 않습니다. 다른 방식으로 질문해주세요.",
+      "enable_profanity_filter": true,
+      "denied_words": [
+        "hack the system",
+        "bypass security",
+        "private information",
+        "personal data"
+      ]
+    }
+  }
