@@ -454,7 +454,6 @@ python guardrail_validator.py test 8fjk2nst45lp --export
     "response": "This topic is prohibited for general user privileges.",
     "response_time": 10.292616128921509
   },
- ```json
   {
     "test_id": 3,
     "category": "DB Information",
