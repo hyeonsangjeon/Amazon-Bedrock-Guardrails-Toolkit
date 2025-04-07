@@ -452,7 +452,7 @@ python guardrails.py
 
 ## 테스트 프롬프트 구성
 
-테스트에 사용할 프롬프트는 `test_prompts.json` 파일에 정의되어 있습니다:
+테스트에 사용할 프롬프트는 `test_prompts_KOR.json` 파일에 정의되어 있습니다:
 
 ```json
 [
