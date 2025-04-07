@@ -382,12 +382,12 @@ def main():
                 print("Format: topic_name,topic description (topic name must be in English/numbers/special chars only)")
                 
                 while True:
-                    topic_input = input("Topic (name,description): ")
+                    topic_input = input("Topic (name|description): ")
                     if not topic_input:
                         break
                     
                     # Split topic name and description
-                    parts = topic_input.split(',', 1)
+                    parts = topic_input.split('|', 1)
                     topic_name = parts[0].strip()
                     
                     # Check if topic name is in English

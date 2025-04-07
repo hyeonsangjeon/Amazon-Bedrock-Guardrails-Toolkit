@@ -381,12 +381,12 @@ def main():
                 print("형식: 주제명,주제 설명 (주제명은 영문/숫자/특수문자만 가능)")
                 
                 while True:
-                    topic_input = input("주제 (주제명,설명): ")
+                    topic_input = input("주제 (주제명|설명): ")
                     if not topic_input:
                         break
                     
                     # 주제명과 설명 분리
-                    parts = topic_input.split(',', 1)
+                    parts = topic_input.split('|', 1)
                     topic_name = parts[0].strip()
                     
                     # 주제명이 영문인지 확인
