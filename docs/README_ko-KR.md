@@ -145,6 +145,8 @@ python guardrails.py
 
 #### 가드레일 생성 예시
 
+<img src="creation_kor.gif" alt="가드레일 생성 데모" style="max-width: 100%; height: auto;">
+
 프로그램을 실행하여 1번 메뉴를 선택하면 다음과 같은 대화형 과정이 진행됩니다:
 사용 가능한 역할은 guardrail_config.json에 추가하세요.
 
