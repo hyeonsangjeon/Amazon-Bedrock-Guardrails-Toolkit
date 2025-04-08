@@ -559,3 +559,7 @@ An error occurred when calling the InvokeModelWithResponseStream operation: Mode
 ## License
 
 This project is provided under the MIT license. For details, refer to the LICENSE file.
+
+## References 
+
+- `[1]`. Amazon Web Services, "CreateGuardrail," Amazon Bedrock API Reference, https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateGuardrail.html
