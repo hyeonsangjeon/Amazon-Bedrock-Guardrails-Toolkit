@@ -157,7 +157,7 @@ def test_guardrail(guardrail_id, test_prompts=None, prompt_file=None, model_id="
                                     trace = chunk_data.get('amazon-bedrock-trace', {})
                                     if 'guardrail' in trace:
                                         action_reason = trace['guardrail'].get('actionReason', '')                                                                                                                                                                
-                                        print(f"'No action' 포함 여부: {'No action' in action_reason}") #action과 Guardrail blocked이 둘다 오는 경우도 있음. Guardrail blocked가 있는 경우는 무조건 블럭 처리
+                                        #print(f"'No action' 포함 여부: {'No action' in action_reason}") #action과 Guardrail blocked이 둘다 오는 경우도 있음. Guardrail blocked가 있는 경우는 무조건 블럭 처리
                                         # if "No action" in action_reason:
                                         #     print("Guardrail 상태: 통과") # 가드레일 output blocked일 경우 같이옴. "actionReason":"Guardrail blocked.\nNo action."                                                                                     
                                         if "Guardrail blocked." in action_reason:                                                                                        
