@@ -1,2 +1,6 @@
-
 boto3
+pandas
+matplotlib 
+seaborn 
+scikit-learn 
+numpy

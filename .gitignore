@@ -7,3 +7,8 @@ __pycache__/
 .DS_Store
 .devcontainer/
 *.excalidraw
+specul*
+specilat*
+quantiz*
+llama3*
+*.txt

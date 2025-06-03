@@ -58,7 +58,6 @@ def load_test_prompts(filename="test_prompts_KOR.json"):
         # 기본 테스트 프롬프트 반환(위와 동일)
         return default_prompts  # 위의 기본 테스트 프롬프트와 동일
 
-
 def test_guardrail(guardrail_id, test_prompts=None, prompt_file=None, model_id="anthropic.claude-3-sonnet-20240229-v1:0", region=AWS_REGION):
     """
     가드레일을 다양한 프롬프트로 테스트합니다
@@ -87,7 +86,7 @@ def test_guardrail(guardrail_id, test_prompts=None, prompt_file=None, model_id="
     print(f"\n========== 가드레일 테스트: {guardrail_id} ({guardrail_name}) ==========\n")
     print(f"사용 모델: {model_id}")
     print(f"테스트 시작 시간: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-    
+    test_start_time=time.time()
     results = []
     
     for i, test in enumerate(test_prompts):
@@ -117,109 +116,124 @@ def test_guardrail(guardrail_id, test_prompts=None, prompt_file=None, model_id="
             }
         
         try:
-            # 가드레일 적용된 모델 호출
+            # 가드레일 적용된 모델 호출 - 가드레일 trace 활성화
             response = bedrock_runtime.invoke_model_with_response_stream(
                 modelId=model_id,
                 contentType='application/json',
                 accept='application/json',
                 body=json.dumps(request_body),
                 guardrailIdentifier=guardrail_id,
-                guardrailVersion='DRAFT'
+                guardrailVersion='DRAFT',
+                trace='ENABLED'
             )
             
             # 응답 처리 (스트리밍)
             stream = response.get('body')
             if stream:
                 response_content = ""
+                guardrail_blocked = False
+                guardrail_status = "✅ 통과됨"
+                blocked_reason = []
+                
                 for event in stream:
+                    # 청크 데이터 처리
                     if 'chunk' in event:
-                        chunk = event['chunk']['bytes'].decode('utf-8')
-                        chunk_data = json.loads(chunk)
-                        
-                        # 모델별 응답 구조 처리
+                        chunk_bytes = event['chunk']['bytes']
+                        chunk_text = chunk_bytes.decode('utf-8')
+                        chunk_data = json.loads(chunk_text)               
+                        # Process response structure by model
                         if 'claude' in model_id.lower():
                             if chunk_data.get('type') == 'content_block_delta':
                                 response_content += chunk_data.get('delta', {}).get('text', '')
                         elif 'completion' in chunk_data:
-                            response_content += chunk_data['completion']
-                
-                # 응답 표시 (너무 길면 자름)
+                            response_content += chunk_data['completion']                                 
+
+                        # Guardrail trace 차단 여부 확인 및 출력 추가
+                        if 'amazon-bedrock-guardrailAction' in chunk_data:
+                            if chunk_data['amazon-bedrock-guardrailAction'] == 'NONE':                                
+                                guardrail_blocked = False
+                            elif chunk_data['amazon-bedrock-guardrailAction'] == 'INTERVENED':       
+                                if 'amazon-bedrock-trace' in chunk_data:
+                                    trace = chunk_data.get('amazon-bedrock-trace', {})
+                                    if 'guardrail' in trace:
+                                        action_reason = trace['guardrail'].get('actionReason', '')                                                                                                                                                                
+                                        print(f"'No action' 포함 여부: {'No action' in action_reason}") #action과 Guardrail blocked이 둘다 오는 경우도 있음. Guardrail blocked가 있는 경우는 무조건 블럭 처리
+                                        # if "No action" in action_reason:
+                                        #     print("Guardrail 상태: 통과") # 가드레일 output blocked일 경우 같이옴. "actionReason":"Guardrail blocked.\nNo action."                                                                                     
+                                        if "Guardrail blocked." in action_reason:                                                                                        
+                                            guardrail_blocked = True
+                                            guardrail_status = "🚫 차단됨"                        
+                                        
+                # 응답 표시 (너무 길면 자름)        
                 if len(response_content) > 300:
                     display_content = f"{response_content[:300]}..."
                 else:
                     display_content = response_content
-                    
-                print(f"응답:\n{display_content}")
-                print(f"응답 시간: {time.time() - start_time:.2f}초")                
                 
+                print(f"응답:\n{display_content}")
+                print(f"응답 시간: {time.time() - start_time:.2f}초")
+                print(f"가드레일 상태: {guardrail_status}")
+                
+
                 results.append({
                     "test_id": i+1,
                     "category": test['category'],
-                    "request": test['prompt'],  # 요청 프롬프트 추가
+                    "is_harmful": test['is_harmful'],
+                    "request": test['prompt'],                    
                     "response": response_content,
-                    "response_time": time.time() - start_time
+                    "response_time": time.time() - start_time,                    
+                    "guardrail_status": "blocked" if guardrail_blocked else "passed"                    
                 })
             
-        except Exception as e:
+        except Exception as e:            
             error_message = str(e)
             print(f"오류: {error_message}")
             print(f"응답 시간: {time.time() - start_time:.2f}초")
             
             if "exception by guardrail" in error_message.lower():
-                print(f"결과: 🚫 가드레일 차단됨 (API 차단됨)")
+                guardrail_status = "🚫 차단됨 (API 차단)"
                 status_result = "exception"
+                print(f"결과: {guardrail_status}")
+                print("Guardrail 상태: 차단")
             else:
-                print(f"결과: ❌ 오류 발생")
+                guardrail_status = "❌ 오류"
                 status_result = "error"
+                print(f"결과: {guardrail_status}")
+            
+            print(f"가드레일 상태: {guardrail_status}")
             
             results.append({
                 "test_id": i+1,
                 "category": test['category'],
-                "request": test['prompt'],  # 요청 프롬프트 추가
+                "is_harmful": test['is_harmful'],
+                "request": test['prompt'],
                 "error": error_message,
                 "response_time": time.time() - start_time,
-                "result": status_result  # 오류 결과를 result로 저장
+                "result": status_result,
+                "guardrail_status": "blocked" if "exception by guardrail" in error_message.lower() else "error"
             })
             
         print("-" * 50)
     
     # 종합 결과 표시
-    print("\n=== 테스트 종합 결과 ===")
-    success_count = sum(1 for r in results if 'error' not in r)
-    exception_count = sum(1 for r in results if 'error' in r and r.get('result') == 'exception')
-    error_count = sum(1 for r in results if 'error' in r and r.get('result') == 'error')
+    print("\n=== 테스트 종합 결과 ===")    
+    success_count = sum(1 for r in results if 'error' not in r and r.get('guardrail_status') == 'passed')
+    blocked_count = sum(1 for r in results if r.get('guardrail_status') == 'blocked')
+    error_count = sum(1 for r in results if 'error' in r and r.get('guardrail_status') == 'error')
+    total_count = len(results)
+    blocked_ratio = blocked_count/total_count
+    elapsed_time = time.time() - test_start_time
     
     print(f"총 테스트: {len(results)}")
-    print(f"성공: {success_count}")
-    print(f"차단: {exception_count}")
+    print(f"가드레일 차단비율: {blocked_ratio*100} %" )
+    print(f"통과: {success_count}")
+    print(f"차단: {blocked_count}")
     print(f"오류: {error_count}")
+    print(f"총 수행 시간: {elapsed_time:.2f}초")
     
-    return results
+    return results, elapsed_time
 
-
-def get_guardrail_name(guardrail_id, region=AWS_REGION):
-    """
-    가드레일 ID로 가드레일 이름을 조회합니다.
-    
-    :param guardrail_id: 조회할 가드레일 ID
-    :param region: AWS 리전
-    :return: 가드레일 이름 (찾지 못한 경우 None)
-    """
-    bedrock_client = boto3.client('bedrock', region_name=region)
-    
-    try:
-        response = bedrock_client.get_guardrail(guardrailIdentifier=guardrail_id)
-        return response.get('name')
-    except Exception:
-        # 가드레일 목록에서 찾기
-        guardrails = get_guardrails_info(region)
-        
-        for guardrail in guardrails:
-            if guardrail['id'] == guardrail_id:
-                return guardrail['name']
-                
-        return None
-
+      
 
 def test_all_guardrails(guardrail_mapping, model_id="anthropic.claude-3-sonnet-20240229-v1:0"):
     """
@@ -334,22 +348,25 @@ def get_guardrails_info(region=AWS_REGION):
         return []
 
 
-def export_results(results, guardrail_id, filename=None):        
+def export_results(results, guardrail_id, elapsed_time=None, filename=None):        
     """
     테스트 결과를 JSON 파일로 내보냅니다.
     
     :param results: 테스트 결과
+    :param elapsed_time: 테스트 총 수행 시간
     :param filename: 저장할 파일 이름 (None이면 자동 생성)
     """
     if filename is None:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"guardrail_test_results_{guardrail_id}_{timestamp}.json"
+        time_suffix = f"{elapsed_time:.1f}s" if elapsed_time is not None else ""
+        
+        filename = f"guardrail_test_results_{guardrail_id}_making-{timestamp}_elapsed-{time_suffix}.json"
     
     # status 키 제거 및 결과 처리
     clean_results = []
     for result in results:
         # 결과에서 status 키 제거한 새로운 딕셔너리 생성
-        clean_result = {k: v for k, v in result.items() if k != 'status'}
+        clean_result = {k: v for k, v in result.items() if k != 'status'}        
         clean_results.append(clean_result)
     
     try:
@@ -505,9 +522,9 @@ if __name__ == "__main__":
             display_models(args.filter)
         
         elif args.command == "test":
-            results = test_guardrail(args.guardrail_id, prompt_file=args.prompts, model_id=args.model)
+            results, elapsed_time = test_guardrail(args.guardrail_id, prompt_file=args.prompts, model_id=args.model)
             if args.export and results:
-                export_results(results, args.guardrail_id)
+                export_results(results, args.guardrail_id, elapsed_time)
         
         elif args.command == "interactive":
             test_custom_prompts(args.guardrail_id, model_id=args.model)
@@ -521,7 +538,7 @@ if __name__ == "__main__":
                     guardrail_mapping[role] = guardrail_id
             
             if guardrail_mapping:
-                results = test_all_guardrails(guardrail_mapping, model_id=args.model)
+                results, elapsed_time = test_all_guardrails(guardrail_mapping, model_id=args.model)
                 if args.export and results:
                     export_results(results)
             else:
