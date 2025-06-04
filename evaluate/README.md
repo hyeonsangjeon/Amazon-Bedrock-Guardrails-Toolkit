@@ -23,17 +23,24 @@ python guardrail_evaluator.py [테스트_결과_파일.json]
 - `-o, --output`: 출력 파일 접두사 지정 (기본값: 입력 파일 이름 + "_eval")
 - `--show-plots`: 그래프를 화면에 표시
 
-### 예시
 
+### Validator로 레이블을 예측 
+```bash
+#python ../guardrail_validator_KOR.py test 9ff3xq112g0i --export --model=anthropic.claude-3-haiku-20240307-v1:0 --prompts=../notebook/output.json
+python ../guardrail_validator_KOR.py test <guardrail_id> --export --model=<가장빠른claude모델> --prompts=<notebook폴더안에추출된 output.json>
+```
+
+
+### 결과파일을 evaluator를 통해 분석하기
 ```bash
 # 기본 사용법
-python guardrail_evaluator.py guardrail_test_results.json
+#python guardrail_evaluator.py ../guardrail_test_results_9ff3xq112g0i_making-20250603_205401_elapsed-50.7s.json
+python guardrail_evaluator.py guardrail_test_results_xxxxxx.json
+
 
 # 출력 파일 접두사 지정
-python guardrail_evaluator.py guardrail_test_results.json -o my_evaluation
+python guardrail_evaluator.py guardrail_test_results_xxxxxx.json -o my_evaluation
 
-# 그래프 화면 표시
-python guardrail_evaluator.py guardrail_test_results.json --show-plots
 ```
 
 ## 출력 파일
